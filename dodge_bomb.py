@@ -29,6 +29,11 @@ def check_bound(rct:pg.Rect) -> tuple[bool,bool]:
 
 
 def gameover(screen: pg.Surface) -> None:
+    """
+    引数:
+    戻り値:
+    着弾時のブラックアウト、こうかとん画像挿入
+    """
     ll_img = pg.Surface((1100,650))
     pg.draw.rect(ll_img,(0,0,0),pg.Rect(0,0,1100,650))
     ll_img.set_alpha(200)
@@ -44,6 +49,11 @@ def gameover(screen: pg.Surface) -> None:
 
 
 def init_bb_imgs() -> tuple[list[pg.Surface],list[int]]:
+    """
+    引数:なし
+    戻り値:爆弾、加速のリスト
+    時間とともに爆弾が加速、拡大する関数
+    """
     bb_imgs = []
     for r in range(1,11):
         bb_img = pg.Surface((20*r,20*r))
@@ -52,6 +62,27 @@ def init_bb_imgs() -> tuple[list[pg.Surface],list[int]]:
         bb_imgs.append(bb_img)
     bb_accs = [a for a in range(1, 11)]
     return bb_imgs, bb_accs
+
+
+kk_img = pg.image.load("fig/3.png")
+def get_kk_imgs() -> dict[tuple[int,int],pg.Surface]:
+    """
+    引数:なし
+    戻り値:移動方向タプルと画像の辞書
+    移動方向に合わせた向きの変更のための関数
+    """
+    kk_dict = {
+        (0, 0): pg.transform.rotozoom(kk_img,0,1.0),
+        (+5, 0): pg.transform.rotozoom(pg.transform.flip(kk_img,True,False),0,1.0),
+        (+5,-5): pg.transform.rotozoom(pg.transform.flip(kk_img,True,False),45,1.0),
+        ( 0,-5): pg.transform.rotozoom(pg.transform.flip(kk_img,True,False),90,1.0),
+        (-5,-5): pg.transform.rotozoom(kk_img,-45,1.0),
+        (-5,0): pg.transform.rotozoom(kk_img,0,1.0),
+        (-5,+5): pg.transform.rotozoom(kk_img,45,1.0),
+        ( 0,+5): pg.transform.rotozoom(pg.transform.flip(kk_img,True,False),-90,1.0),
+        (+5,+5): pg.transform.rotozoom(pg.transform.flip(kk_img,True,False),-45,1.0),
+    }
+    return kk_dict
 
 
 def main():
@@ -72,7 +103,7 @@ def main():
     tmr = 0
 
     bb_imgs,bb_accs =init_bb_imgs()   
-    
+    kk_imgs = get_kk_imgs()
     
     while True:
         for event in pg.event.get():
@@ -110,6 +141,7 @@ def main():
             vx *= -1
         if not tate: #縦方向にはみ出ていたら 
             vy *= -1
+        kk_img = kk_imgs[tuple(sum_mv)]
         screen.blit(kk_img, kk_rct)
         screen.blit(bb_img,bb_rct)
         pg.display.update()
